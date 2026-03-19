@@ -52,6 +52,22 @@ server {
         return 200 "User-agent: *\nDisallow: /";
     }
 
+    location /client/geo/geoip.dat {
+        alias /var/www/files/geoip.dat;
+        default_type application/octet-stream;
+        add_header Content-Disposition "attachment; filename=geoip.dat" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "DENY" always;
+    }
+
+    location /client/geo/geosite.dat {
+        alias /var/www/files/geosite.dat;
+        default_type application/octet-stream;
+        add_header Content-Disposition "attachment; filename=geosite.dat" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "DENY" always;
+    }
+
     access_log off;
     error_log /dev/null;
 }

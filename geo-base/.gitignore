@@ -1,0 +1,8 @@
+# Ignore downloaded geo databases
+*.dat
+
+# Ignore update logs
+update.log
+
+# Keep the update script
+!update-geo-base.sh
