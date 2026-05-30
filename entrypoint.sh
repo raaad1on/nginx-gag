@@ -49,6 +49,16 @@ else
     exit 1
 fi
 
+# Substitute {{DOMAIN}} in nginx config template
+if [ -f /etc/nginx/nginx.conf.template ]; then
+    log "Substituting {{DOMAIN}} with ${DOMAIN} in nginx config"
+    sed "s/{{DOMAIN}}/${DOMAIN}/g" /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
+    log "Nginx config generated successfully"
+else
+    log "ERROR: Nginx config template not found at /etc/nginx/nginx.conf.template"
+    exit 1
+fi
+
 log "Container initialization completed, starting nginx"
 
 # Start nginx
