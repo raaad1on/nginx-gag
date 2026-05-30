@@ -1,9 +1,7 @@
 FROM openquantumsafe/nginx:latest
 
 # Install curl for HEALTHCHECK
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache curl
 
 # Copy HTML files
 COPY index.html /var/www/html/index.html
@@ -17,7 +15,7 @@ COPY geo-base/update-geo-base.sh /geo-base/update-geo-base.sh
 RUN chmod +x /geo-base/update-geo-base.sh
 
 # Set proper permissions
-RUN chown -R www-data:www-data /var/www/html && \
+RUN chown -R nginx:nginx /var/www/html && \
     chmod -R 755 /var/www/html
 
 # Expose ports
