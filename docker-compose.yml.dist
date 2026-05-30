@@ -1,9 +1,9 @@
 services:
   security-gateway:
-    image: ghcr.io/raaad1on/nginx-gag:${TAG:-latest}
+    image: ghcr.io/raaad1on/nginx-gag:pqc-latest
     container_name: nginx-gag
     environment:
-      - DOMAIN=${DOMAIN:-example.com}
+      - DOMAIN=YOUR_DOMAIN_HERE
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf.template:ro
       - /etc/nginx/ssl:/etc/nginx/ssl:ro

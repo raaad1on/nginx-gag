@@ -26,9 +26,22 @@ cd nginx-gag
 git checkout feature/pqc-standalone
 ```
 
-Edit `.env` or export `DOMAIN`:
+Create compose file from template:
 ```bash
-export DOMAIN=your-domain.com
+cp docker-compose.yml.dist docker-compose.yml
+```
+
+Edit `docker-compose.yml` and set your domain:
+```yaml
+environment:
+  - DOMAIN=your-domain.com
+```
+
+Place SSL certificates:
+```bash
+sudo mkdir -p /etc/nginx/ssl
+sudo cp fullchain.pem /etc/nginx/ssl/
+sudo cp privkey.pem /etc/nginx/ssl/
 ```
 
 Start:

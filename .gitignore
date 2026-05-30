@@ -27,3 +27,6 @@ temp/
 
 # Nginx template (local override)
 nginx.conf.template
+
+# Server compose (use docker-compose.yml.dist as template)
+docker-compose.yml
