@@ -1,83 +1,47 @@
 # nginx-gag
 
-A secure authentication gateway built with nginx and Docker. This project provides a security barrier that presents a fake authentication interface while logging all access attempts.
+Post-quantum secure authentication gateway built with nginx and Open Quantum Safe. Presents a fake authentication interface while logging all access attempts.
 
 ## Features
 
-- **🔒 SSL/TLS Security**: Modern encryption with support for wildcard certificates
-- **🛡️ Security Headers**: Comprehensive security headers to prevent common attacks
-- **🚫 Fake Authentication**: Always fails authentication for security through obscurity
-- **📊 Health Monitoring**: Built-in health check endpoint for monitoring
-- **🐳 Docker Ready**: Easy deployment with Docker Compose
-- **🔒 Localhost Only**: Ports bound to localhost for enhanced security
-- **📝 Audit Logging**: All authentication attempts are logged and monitored
+- **Post-Quantum TLS**: ML-KEM (X25519MLKEM768) hybrid key exchange via OpenSSL 3 + OQS
+- **Security Headers**: HSTS, CSP, X-Frame-Options, and more
+- **Fake Authentication**: Always fails authentication for security through obscurity
+- **Health Monitoring**: Built-in health check endpoint
+- **Docker Ready**: Automated CI/CD build, pull and run
+- **Localhost Only**: Ports bound to 127.0.0.1
 
 ## Quick Start
 
 ### Prerequisites
 
-- Docker
-- Docker Compose
+- Docker + Docker Compose
 - SSL certificates in `/etc/nginx/ssl/`
 
-### Installation
+### Deploy
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/raaad1on/nginx-gag.git
-   cd nginx-gag
-   ```
+```bash
+git clone https://github.com/raaad1on/nginx-gag.git
+cd nginx-gag
+git checkout feature/pqc-standalone
+```
 
-2. **Prepare SSL certificates:**
-   ```bash
-   sudo mkdir -p /etc/nginx/ssl
-   sudo cp fullchain.pem /etc/nginx/ssl/
-   sudo cp privkey.pem /etc/nginx/ssl/
-   sudo chmod 644 /etc/nginx/ssl/fullchain.pem
-   sudo chmod 600 /etc/nginx/ssl/privkey.pem
-   ```
+Edit `.env` or export `DOMAIN`:
+```bash
+export DOMAIN=your-domain.com
+```
 
-3. **Configure your domain:**
-   Edit `docker-compose.yml` and set your domain:
-   ```yaml
-   environment:
-     - DOMAIN=your-domain.com
-   ```
+Start:
+```bash
+docker compose up -d
+```
 
-4. **Start the service:**
-   ```bash
-   docker-compose up -d
-   ```
+### Build locally
 
-5. **Verify deployment:**
-   ```bash
-   # Check health status
-   curl http://127.0.0.1:9000/health
-   
-   # Test the gateway
-   curl -k https://127.0.0.1:444
-   ```
-
-## Architecture
-
-### Ports
-
-- **444**: HTTPS gateway (localhost only)
-- **9000**: Health check endpoint (localhost only)
-
-### Security Features
-
-- **SSL/TLS**: TLS 1.2 and 1.3 support
-- **HTTP/2**: Enabled for performance
-- **Security Headers**: HSTS, CSP, X-Frame-Options, and more
-- **Access Control**: Blocks hidden files and restricts API access
-- **Authentication**: Fake authentication that always fails
-
-### Certificate Support
-
-- **Wildcard Certificates**: Full support for wildcard SSL certificates
-- **Certificate Location**: `/etc/nginx/ssl/` on the host
-- **File Names**: `fullchain.pem` and `privkey.pem`
+```bash
+docker build -t nginx-gag .
+docker compose up -d
+```
 
 ## Configuration
 
@@ -86,156 +50,59 @@ A secure authentication gateway built with nginx and Docker. This project provid
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `DOMAIN` | `example.com` | Your domain name |
+| `TAG` | `latest` | Docker image tag |
 
-### Docker Compose
+### Nginx Config
 
-```yaml
-version: '3.8'
+`nginx.conf` is mounted into the container as a template. The entrypoint script replaces `{{DOMAIN}}` with the value of the `DOMAIN` environment variable at startup.
 
-services:
-  security-gateway:
-    build: .
-    environment:
-      - DOMAIN=your-domain.com
-    volumes:
-      - /etc/nginx/ssl:/etc/nginx/ssl:ro
-      - /var/log/nginx:/var/log/nginx
-    ports:
-      - "127.0.0.1:444:444"
-      - "127.0.0.1:9000:9000"
-    restart: unless-stopped
+To apply config changes, restart the container:
+```bash
+docker compose restart
 ```
 
-## Monitoring
+### SSL Certificates
 
-### Health Check
+Place your certificates at:
+- `/etc/nginx/ssl/fullchain.pem`
+- `/etc/nginx/ssl/privkey.pem`
 
-The gateway provides a health check endpoint:
+## Ports
+
+- **444**: HTTPS gateway (127.0.0.1 only)
+- **9000**: Health check endpoint (127.0.0.1 only)
+
+## CI/CD
+
+On push to `feature/pqc-standalone`, GitHub Actions automatically builds and pushes the image to GHCR:
+
+```
+ghcr.io/raaad1on/nginx-gag:pqc-latest
+```
+
+On the server:
+```bash
+docker pull ghcr.io/raaad1on/nginx-gag:pqc-latest
+docker compose up -d
+```
+
+## Health Check
+
 ```bash
 curl http://127.0.0.1:9000/health
+# Expected: HTTP 204
 ```
 
-Expected response: HTTP 204 (No Content)
+## TLS Configuration
 
-### Docker Health Check
-
-Docker automatically monitors container health:
-```bash
-docker ps
-```
-
-### Logs
-
-View container logs:
-```bash
-docker-compose logs -f
-```
+- **Protocol**: TLS 1.3 only
+- **Key Exchange**: X25519MLKEM768 (post-quantum hybrid), X25519, secp384r1
+- **Ciphers**: AES-256-GCM, ChaCha20-Poly1305, AES-128-GCM
+- **OCSP Stapling**: Enabled
+- **Session Tickets**: Disabled
 
 ## Security
 
-### Network Security
-
-- **Localhost Binding**: All ports bound to 127.0.0.1 only
-- **No External Exposure**: No external network access
-- **Firewall Friendly**: Minimal port requirements
-
-### SSL Security
-
-- **Modern Protocols**: TLS 1.2 and 1.3 only
-- **Strong Ciphers**: Modern cipher suites prioritized
-- **OCSP Stapling**: Enabled for certificate validation
-- **Session Security**: Session tickets disabled
-
-### Authentication Security
-
-- **Fake Interface**: Always presents authentication form
-- **Always Fails**: Authentication never succeeds
-- **Audit Trail**: All attempts logged and monitored
-- **No Credentials**: No real authentication credentials
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Container won't start**
-   - Check port availability (444, 9000)
-   - Verify SSL certificate paths
-   - Check Docker logs
-
-2. **SSL certificate errors**
-   - Verify certificate files exist
-   - Check file permissions
-   - Validate certificate chain
-
-3. **Health check failures**
-   - Verify port binding
-   - Check nginx configuration
-   - Test connectivity
-
-For detailed troubleshooting, see [docs/troubleshooting.md](docs/troubleshooting.md).
-
-## Documentation
-
-- [Deployment Guide](docs/deployment.md) - Step-by-step deployment instructions
-- [Configuration Guide](docs/configuration.md) - Detailed configuration options
-- [Troubleshooting Guide](docs/troubleshooting.md) - Common issues and solutions
-
-## Development
-
-### Building the Image
-
-```bash
-docker build -t nginx-gag .
-```
-
-### Testing
-
-```bash
-# Test nginx configuration
-docker exec nginx-gag nginx -t
-
-# Test SSL certificate
-docker exec nginx-gag openssl x509 -in /etc/nginx/ssl/fullchain.pem -text -noout
-
-# Test connectivity
-curl -k https://127.0.0.1:444
-```
-
-### Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-- [GitHub Issues](https://github.com/raaad1on/nginx-gag/issues)
-- [Documentation](docs/)
-- [Troubleshooting](docs/troubleshooting.md)
-
-## Security Notes
-
-⚠️ **Important**: This gateway is designed as a security barrier that prevents access rather than facilitates it. All authentication attempts will fail, and all access attempts are logged for security monitoring.
-
-- **No Real Authentication**: The authentication interface is fake
-- **Audit Logging**: All attempts are monitored and logged
-- **Security Through Obscurity**: Designed to confuse and deter unauthorized access
-- **No Sensitive Data**: No real credentials or sensitive information stored
-
-## Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-## Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for a list of changes and version history.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- All ports bound to 127.0.0.1 — no external exposure
+- Authentication interface is fake — always fails
+- All access attempts are logged and monitored

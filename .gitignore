@@ -1,22 +1,4 @@
-# Docker
-.dockerignore
 
-# Logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage
-
-# OS generated files
 .DS_Store
 .DS_Store?
 ._*
@@ -39,6 +21,9 @@ Thumbs.db
 *.swo
 *~
 
-# Temporary files
+# Temp
 tmp/
 temp/
+
+# Nginx template (local override)
+nginx.conf.template
