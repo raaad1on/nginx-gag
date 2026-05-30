@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -euo pipefail
 
 if [ -f /etc/nginx/nginx.conf.template ]; then
