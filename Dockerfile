@@ -1,5 +1,6 @@
 FROM openquantumsafe/nginx:latest
 
+USER root
 RUN apk add --no-cache curl
 
 COPY index.html /var/www/html/index.html
