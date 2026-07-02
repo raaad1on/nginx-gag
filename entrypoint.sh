@@ -9,7 +9,7 @@ events {
 
 http {
 NGINX_CONF
-    sed "s/{{DOMAIN}}/${DOMAIN}/g" /etc/nginx/nginx.conf.template >> /opt/nginx/conf/nginx.conf
+    sed "s/{{SOURCE_DOMAIN}}/${SOURCE_DOMAIN}/g; s/{{TARGET_DOMAIN}}/${TARGET_DOMAIN}/g" /etc/nginx/nginx.conf.template >> /opt/nginx/conf/nginx.conf
     echo "}" >> /opt/nginx/conf/nginx.conf
 fi
 

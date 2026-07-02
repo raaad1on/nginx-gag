@@ -2,7 +2,7 @@ name: Build and Push Docker Image
 
 on:
   push:
-    branches: [feature/pqc-standalone]
+    branches: [pq301]
   workflow_dispatch:
 
 env:
@@ -33,7 +33,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=pqc-latest
+            type=raw,value=redirect-latest
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
