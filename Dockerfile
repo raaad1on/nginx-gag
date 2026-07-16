@@ -3,7 +3,7 @@ FROM openquantumsafe/nginx:latest
 USER root
 RUN apk add --no-cache curl
 
-COPY index.html /var/www/index.html
+COPY index.html /var/www/index.html.template
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh && sed -i 's/\r$//' /entrypoint.sh

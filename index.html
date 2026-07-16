@@ -148,6 +148,29 @@
         .btn:hover {
             background: #1d4ed8;
         }
+
+        .btn-secondary {
+            display: block;
+            width: 100%;
+            margin-top: 12px;
+            padding: 14px;
+            background: transparent;
+            color: var(--dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        .btn-secondary:hover {
+            background: var(--light);
+            border-color: var(--gray);
+        }
         
         .error-message {
             background: #fef2f2;
@@ -186,7 +209,7 @@
 <body>
     <div class="login-container">
         <div class="login-header">
-            <div class="node-info">SP2-RU-04</div>
+            <div class="node-info" data-node-id="{{NODE_ID}}">{{NODE_ID}}</div>
             <div class="logo">
                 <div class="logo-icon">🔒</div>
                 <div class="logo-text">EdgeStream</div>
@@ -216,6 +239,8 @@
                     Contact your CDN administrator for assistance.
                 </div>
             </form>
+
+            <a class="btn-secondary" href="/testspeed">Test Speed</a>
             
             <div class="security-info">
                 <p>This node handles 12.7+ Gbps traffic with 99.99% uptime SLA</p>
@@ -260,9 +285,12 @@
                 }, 300);
             });
             
+            const nodeInfo = document.querySelector('.node-info');
+            const nodeId = nodeInfo.dataset.nodeId || nodeInfo.textContent.trim();
+
             window.setInterval(() => {
                 const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
-                document.querySelector('.node-info').textContent = `SP2-RU-04 | ${timestamp}Z`;
+                nodeInfo.textContent = `${nodeId} | ${timestamp}Z`;
             }, 1000);
         });
     </script>

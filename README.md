@@ -7,6 +7,9 @@ Post-quantum secure authentication gateway built with nginx and Open Quantum Saf
 - **Post-Quantum TLS**: ML-KEM (X25519MLKEM768) hybrid key exchange via OpenSSL 3 + OQS
 - **Security Headers**: HSTS, CSP, X-Frame-Options, and more
 - **Fake Authentication**: Always fails authentication for security through obscurity
+- **Dynamic Node ID**: Badge like `DE2-NODE-387` from the third-level DOMAIN label + random digits
+- **Speed Test**: `/testspeed` serves a fresh 10MB binary (rate-limited to 10/min per IP)
+- **Unix Socket**: Also listens on `/dev/shm/nginx/nginx.sock` (ssl)
 - **Health Monitoring**: Built-in health check endpoint
 - **Docker Ready**: Automated CI/CD build, pull and run
 - **Localhost Only**: Ports bound to 127.0.0.1
@@ -31,10 +34,10 @@ Create compose file from template:
 cp docker-compose.yml.dist docker-compose.yml
 ```
 
-Edit `docker-compose.yml` and set your domain:
+Edit `docker-compose.yml` and set your domain (third-level label becomes the node prefix):
 ```yaml
 environment:
-  - DOMAIN=your-domain.com
+  - DOMAIN=de2.edgestream.xyz
 ```
 
 Place SSL certificates:
@@ -62,8 +65,15 @@ docker compose up -d
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `DOMAIN` | `example.com` | Your domain name |
+| `DOMAIN` | `example.com` | FQDN for `server_name`; third-level label drives UI node ID |
 | `TAG` | `latest` | Docker image tag |
+
+### Node ID
+
+On each container start, the entrypoint builds a badge from `DOMAIN`:
+
+- `de2.edgestream.xyz` → `DE2-NODE-387` (random 100–999)
+- Substituted into `index.html` as `{{NODE_ID}}`
 
 ### Nginx Config
 
@@ -80,10 +90,18 @@ Place your certificates at:
 - `/etc/nginx/ssl/fullchain.pem`
 - `/etc/nginx/ssl/privkey.pem`
 
-## Ports
+## Ports and Socket
 
 - **444**: HTTPS gateway (127.0.0.1 only)
 - **9000**: Health check endpoint (127.0.0.1 only)
+- **Unix socket**: `/dev/shm/nginx/nginx.sock` (ssl), mounted via compose volume
+
+## Speed Test
+
+- Endpoint: `GET /testspeed` → 10MB random binary (`Content-Disposition: attachment`)
+- File regenerated on every container start
+- Rate limit: 10 downloads per minute per IP (`429` when exceeded)
+- Button on the login page: **Test Speed**
 
 ## CI/CD
 
@@ -118,4 +136,5 @@ curl http://127.0.0.1:9000/health
 
 - All ports bound to 127.0.0.1 — no external exposure
 - Authentication interface is fake — always fails
+- Speed test endpoint is rate-limited
 - All access attempts are logged and monitored
