@@ -29,8 +29,8 @@ mkdir -p /opt/nginx-gag && cd /opt/nginx-gag
 curl -fsSL -o docker-compose.yml \
   https://raw.githubusercontent.com/raaad1on/nginx-gag/feature/pqc-standalone/docker-compose.yml.dist
 
-# set your domain (third-level label becomes the node prefix)
-sed -i 's/YOUR_DOMAIN_HERE/de2.edgestream.xyz/' docker-compose.yml
+# edit DOMAIN=example.com to your FQDN
+nano docker-compose.yml
 
 docker compose pull
 docker compose up -d
@@ -58,7 +58,7 @@ docker compose up -d
 
 On each container start, the entrypoint builds a badge from `DOMAIN`:
 
-- `de2.edgestream.xyz` → `DE2-NODE-387` (random 100–999)
+- `node1.example.com` → `NODE1-NODE-387` (random 100–999)
 - Substituted into `index.html` as `{{NODE_ID}}`
 
 ### Optional config override

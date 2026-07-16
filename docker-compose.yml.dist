@@ -3,7 +3,7 @@ services:
     image: ghcr.io/raaad1on/nginx-gag:pqc-latest
     container_name: nginx-gag
     environment:
-      - DOMAIN=YOUR_DOMAIN_HERE
+      - DOMAIN=example.com
     volumes:
       - /etc/nginx/ssl:/etc/nginx/ssl:ro
       - /dev/shm/nginx:/dev/shm/nginx
