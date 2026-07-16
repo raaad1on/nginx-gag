@@ -4,6 +4,7 @@ USER root
 RUN apk add --no-cache curl
 
 COPY index.html /var/www/index.html.template
+COPY nginx.conf /etc/nginx/nginx.conf.template
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh && sed -i 's/\r$//' /entrypoint.sh

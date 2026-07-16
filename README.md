@@ -19,38 +19,24 @@ Post-quantum secure authentication gateway built with nginx and Open Quantum Saf
 ### Prerequisites
 
 - Docker + Docker Compose
-- SSL certificates in `/etc/nginx/ssl/`
+- SSL certificates in `/etc/nginx/ssl/` (`fullchain.pem`, `privkey.pem`)
 
 ### Deploy
 
 ```bash
-git clone https://github.com/raaad1on/nginx-gag.git
-cd nginx-gag
-git checkout feature/pqc-standalone
-```
+mkdir -p /opt/nginx-gag && cd /opt/nginx-gag
 
-Create compose file from template:
-```bash
-cp docker-compose.yml.dist docker-compose.yml
-```
+curl -fsSL -o docker-compose.yml \
+  https://raw.githubusercontent.com/raaad1on/nginx-gag/feature/pqc-standalone/docker-compose.yml.dist
 
-Edit `docker-compose.yml` and set your domain (third-level label becomes the node prefix):
-```yaml
-environment:
-  - DOMAIN=example.com
-```
+# set your domain (third-level label becomes the node prefix)
+sed -i 's/YOUR_DOMAIN_HERE/de2.edgestream.xyz/' docker-compose.yml
 
-Place SSL certificates:
-```bash
-sudo mkdir -p /etc/nginx/ssl
-sudo cp fullchain.pem /etc/nginx/ssl/
-sudo cp privkey.pem /etc/nginx/ssl/
-```
-
-Start:
-```bash
+docker compose pull
 docker compose up -d
 ```
+
+Config and UI are baked into the image. You only need compose + SSL certs + `DOMAIN`.
 
 ### Build locally
 
@@ -75,13 +61,13 @@ On each container start, the entrypoint builds a badge from `DOMAIN`:
 - `de2.edgestream.xyz` → `DE2-NODE-387` (random 100–999)
 - Substituted into `index.html` as `{{NODE_ID}}`
 
-### Nginx Config
+### Optional config override
 
-`nginx.conf` is mounted into the container as a template. The entrypoint script replaces `{{DOMAIN}}` with the value of the `DOMAIN` environment variable at startup.
+To override the baked-in nginx template, mount your own file:
 
-To apply config changes, restart the container:
-```bash
-docker compose restart
+```yaml
+volumes:
+  - ./nginx.conf:/etc/nginx/nginx.conf.template:ro
 ```
 
 ### SSL Certificates
@@ -99,13 +85,13 @@ Place your certificates at:
 ## Speed Test
 
 - Endpoint: `GET /testspeed` → 10MB random binary (`Content-Disposition: attachment`)
-- File regenerated on every container start
+- File written to `/var/www/speedtest-10mb.bin` on every container start
 - Rate limit: 10 downloads per minute per IP (`429` when exceeded)
 - Button on the login page: **Test Speed**
 
 ## CI/CD
 
-On push to `feature/pqc-standalone`, GitHub Actions automatically builds and pushes the image to GHCR:
+On push to `feature/pqc-standalone`, GitHub Actions builds and pushes:
 
 ```
 ghcr.io/raaad1on/nginx-gag:pqc-latest
@@ -113,7 +99,7 @@ ghcr.io/raaad1on/nginx-gag:pqc-latest
 
 On the server:
 ```bash
-docker pull ghcr.io/raaad1on/nginx-gag:pqc-latest
+docker compose pull
 docker compose up -d
 ```
 

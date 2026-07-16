@@ -21,6 +21,7 @@ elif [ -f /var/www/index.html ]; then
 fi
 
 dd if=/dev/urandom of=/var/www/speedtest-10mb.bin bs=1M count=10 status=none
+chmod 644 /var/www/speedtest-10mb.bin
 
 if [ -f /etc/nginx/nginx.conf.template ]; then
     cat > /opt/nginx/conf/nginx.conf <<'NGINX_CONF'
