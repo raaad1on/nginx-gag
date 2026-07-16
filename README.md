@@ -37,7 +37,7 @@ cp docker-compose.yml.dist docker-compose.yml
 Edit `docker-compose.yml` and set your domain (third-level label becomes the node prefix):
 ```yaml
 environment:
-  - DOMAIN=de2.edgestream.xyz
+  - DOMAIN=example.com
 ```
 
 Place SSL certificates:
