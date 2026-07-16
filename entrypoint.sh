@@ -10,11 +10,14 @@ LABEL="${DOMAIN%%.*}"
 LABEL_UPPER="$(echo "$LABEL" | tr '[:lower:]' '[:upper:]')"
 NODE_RAND="$(awk 'BEGIN{srand(); print int(100+rand()*900)}')"
 NODE_ID="${LABEL_UPPER}-NODE-${NODE_RAND}"
+NODE_GBPS="$(awk 'BEGIN{srand(); printf "%.1f", 1.5+rand()*3.5}')"
 
 if [ -f /var/www/index.html.template ]; then
-    sed "s/{{NODE_ID}}/${NODE_ID}/g" /var/www/index.html.template > /var/www/index.html
+    sed -e "s/{{NODE_ID}}/${NODE_ID}/g" -e "s/{{NODE_GBPS}}/${NODE_GBPS}/g" \
+        /var/www/index.html.template > /var/www/index.html
 elif [ -f /var/www/index.html ]; then
-    sed -i "s/{{NODE_ID}}/${NODE_ID}/g" /var/www/index.html
+    sed -i -e "s/{{NODE_ID}}/${NODE_ID}/g" -e "s/{{NODE_GBPS}}/${NODE_GBPS}/g" \
+        /var/www/index.html
 fi
 
 dd if=/dev/urandom of=/var/www/speedtest-10mb.bin bs=1M count=10 status=none
