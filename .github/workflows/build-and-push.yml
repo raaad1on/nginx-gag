@@ -1,11 +1,12 @@
-name: Build and Push Docker Image
+name: Build and Push CDN Image
 
 on:
   push:
     branches:
-      - feature/pqc-standalone
+      - cdn
     tags:
-      - 'v*.*.*'
+      - 'cdn-v*.*.*'
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
@@ -38,11 +39,10 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=pqc-latest,enable=${{ github.ref == 'refs/heads/feature/pqc-standalone' }}
+            type=raw,value=cdn-latest,enable=${{ github.ref == 'refs/heads/cdn' }}
             type=ref,event=branch
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix=,suffix=,format=short
+            type=semver,pattern={{version}},prefix=cdn-
+            type=sha,prefix=cdn-,format=short
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6

@@ -1,8 +1,8 @@
-name: Build and Push Docker Image
+name: Build CDN Image (dispatch)
 
 on:
   push:
-    branches: [feature/pqc-standalone]
+    branches: [cdn]
   workflow_dispatch:
 
 env:
@@ -33,7 +33,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=pqc-latest
+            type=raw,value=cdn-latest
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6

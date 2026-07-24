@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Настройка Nginx xHTTP для NGENIX</title>
+<style>
+:root {
+  --bg:#0b0d10; --panel:#12151a; --panel2:#171b21; --line:#252b34;
+  --text:#f5f7fa; --muted:#9ba5b3; --accent:#76e6a7; --accent2:#65b8ff;
+  --danger:#ff8c8c; --radius:18px;
+}
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  margin:0;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(101,184,255,.10), transparent 28rem),
+    radial-gradient(circle at 85% 10%, rgba(118,230,167,.08), transparent 26rem),
+    var(--bg);
+  color:var(--text);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  line-height:1.55;
+}
+.wrapper { width:min(1040px,calc(100% - 32px)); margin:0 auto; }
+.hero { padding:72px 0 36px; }
+.badge {
+  display:inline-flex; align-items:center; gap:8px; padding:8px 12px;
+  border:1px solid var(--line); border-radius:999px; background:rgba(18,21,26,.8);
+  color:var(--muted); font-size:13px;
+}
+.badge i { width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 18px var(--accent); }
+h1 { margin:20px 0 12px; font-size:clamp(36px,7vw,72px); line-height:.98; letter-spacing:-.055em; }
+.hero p { max-width:720px; margin:0; color:var(--muted); font-size:18px; }
+.nav { display:flex; flex-wrap:wrap; gap:10px; margin-top:28px; }
+.nav a {
+  color:var(--text); text-decoration:none; padding:10px 14px; border:1px solid var(--line);
+  border-radius:12px; background:rgba(18,21,26,.72); font-size:14px;
+}
+.nav a:hover { border-color:#3b4654; transform:translateY(-1px); }
+main { padding:10px 0 80px; }
+.step { display:grid; grid-template-columns:64px 1fr; gap:20px; margin:22px 0; }
+.num {
+  width:48px; height:48px; display:grid; place-items:center; border-radius:14px;
+  border:1px solid var(--line); background:var(--panel); color:var(--accent); font-weight:800;
+}
+.card {
+  border:1px solid var(--line); border-radius:var(--radius); background:rgba(18,21,26,.9);
+  padding:24px; box-shadow:0 20px 70px rgba(0,0,0,.18);
+}
+.card h2 { margin:0 0 8px; font-size:22px; letter-spacing:-.02em; }
+.card p { margin:0 0 16px; color:var(--muted); }
+.note {
+  border-left:3px solid var(--accent2); padding:12px 14px; background:rgba(101,184,255,.07);
+  border-radius:0 12px 12px 0; color:#c8d9ea; margin:16px 0;
+}
+.warn { border-left-color:var(--danger); background:rgba(255,140,140,.07); color:#f0c9c9; }
+.codebox { position:relative; overflow:hidden; border:1px solid var(--line); border-radius:14px; background:#090b0e; }
+.codehead {
+  display:flex; justify-content:space-between; align-items:center; gap:12px;
+  padding:10px 12px; border-bottom:1px solid var(--line); background:var(--panel2);
+  color:var(--muted); font-size:12px;
+}
+.copy {
+  border:1px solid #36404d; background:#1d232b; color:var(--text); border-radius:9px;
+  padding:7px 10px; cursor:pointer; font:inherit; font-size:12px;
+}
+.copy:hover { border-color:#566579; }
+.copy.done { color:var(--accent); border-color:rgba(118,230,167,.45); }
+pre {
+  margin:0; padding:18px; overflow:auto; max-height:660px; tab-size:4;
+  font:13px/1.58 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+  color:#dce4ee;
+}
+.answers { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:16px; }
+.answer { border:1px solid var(--line); border-radius:14px; padding:16px; background:var(--panel2); }
+.answer strong { display:block; margin-bottom:6px; }
+.answer span { color:var(--muted); font-size:14px; }
+.answer code { color:var(--accent); }
+.success {
+  display:flex; gap:14px; align-items:flex-start; border:1px solid rgba(118,230,167,.25);
+  background:rgba(118,230,167,.07); border-radius:16px; padding:18px; margin-top:16px;
+}
+.success b { color:var(--accent); }
+footer { padding:24px 0 48px; color:var(--muted); font-size:13px; border-top:1px solid var(--line); }
+@media (max-width:760px) {
+  .hero { padding-top:46px; }
+  .step { grid-template-columns:1fr; gap:10px; }
+  .num { width:42px; height:42px; }
+  .card { padding:18px; }
+  .answers { grid-template-columns:1fr; }
+  pre { font-size:12px; }
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <header class="hero">
+    <div class="badge"><i></i> NGENIX · Nginx · Xray · unix socket</div>
+    <h1>Настройка Nginx xHTTP<br>для NGENIX</h1>
+    <p>Origin на образе <code>nginx-gag:cdn-latest</code>: HTTPS :443, реальные сертификаты, заглушка gag, xHTTP через unix socket.</p>
+    <nav class="nav">
+      <a href="#ssh">Подключение</a>
+      <a href="#prep">Подготовка</a>
+      <a href="#install">Установка</a>
+      <a href="#check">Проверка</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="step" id="ssh">
+      <div class="num">01</div>
+      <div class="card">
+        <h2>Подключитесь к серверу</h2>
+        <p>Откройте терминал и войдите на origin-сервер по SSH под пользователем <b>root</b>.</p>
+        <div class="codebox">
+          <div class="codehead"><span>SSH</span><button class="copy" data-copy="sshcmd">Копировать</button></div>
+          <pre id="sshcmd">ssh root@IP_СЕРВЕРА</pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="prep">
+      <div class="num">02</div>
+      <div class="card">
+        <h2>Порт 443, сертификаты и сокет</h2>
+        <p>Порт 443 должен быть свободен. Сертификаты — те же, что для nginx-gag.</p>
+        <div class="codebox">
+          <div class="codehead"><span>Проверка порта и certs</span><button class="copy" data-copy="prep">Копировать</button></div>
+          <pre id="prep">ss -lntp | grep ':443' || echo "Порт 443 свободен"
+ls -l /etc/nginx/ssl/fullchain.pem /etc/nginx/ssl/privkey.pem
+mkdir -p /dev/shm/nginx
+# Xray должен слушать: /dev/shm/nginx/cdn-xhttp.sock
+ls -l /dev/shm/nginx/cdn-xhttp.sock || echo "Сокет ещё нет — поднимите xHTTP inbound"</pre>
+        </div>
+        <div class="note warn">Остановите старый Caddy/Nginx на 443 при конфликте: <code>docker rm -f caddy nginx-cdn 2&gt;/dev/null || true</code></div>
+        <div class="note">В Xray inbound укажите listen <code>/dev/shm/nginx/cdn-xhttp.sock</code> и path, совпадающий с <code>XHTTP_PATH</code>.</div>
+      </div>
+    </section>
+
+    <section class="step" id="install">
+      <div class="num">03</div>
+      <div class="card">
+        <h2>Установите nginx-cdn</h2>
+        <p>Скопируйте блок в SSH-терминал. Перед запуском поправьте <code>DOMAIN</code> и <code>XHTTP_PATH</code> под inbound.</p>
+        <div class="codebox">
+          <div class="codehead"><span>install-nginx-cdn.sh</span><button class="copy" data-copy="fullscript">Копировать весь скрипт</button></div>
+          <pre id="fullscript">mkdir -p /opt/nginx-cdn /dev/shm/nginx
+cd /opt/nginx-cdn
+
+curl -fsSL -o docker-compose.yml \
+  https://raw.githubusercontent.com/raaad1on/nginx-gag/cdn/docker-compose.yml.dist
+
+# DOMAIN и XHTTP_PATH — как в Xray inbound
+sed -i 's/DOMAIN=example.com/DOMAIN=YOUR.DOMAIN.TLD/' docker-compose.yml
+sed -i 's|XHTTP_PATH=/api/v1/hs/edge/sigments.ts|XHTTP_PATH=/api/v1/hs/edge/sigments.ts|' docker-compose.yml
+
+docker compose pull
+docker compose up -d --force-recreate
+
+sleep 2
+docker ps --filter name=nginx-cdn
+curl -sS https://127.0.0.1/health || true</pre>
+        </div>
+        <div class="answers">
+          <div class="answer">
+            <strong>DOMAIN</strong>
+            <span>FQDN origin, например:<br><code>node1.example.com</code></span>
+          </div>
+          <div class="answer">
+            <strong>XHTTP_PATH</strong>
+            <span>Путь из inbound Xray, например:<br><code>/api/v1/hs/edge/sigments.ts</code></span>
+          </div>
+          <div class="answer">
+            <strong>Unix socket</strong>
+            <span>Фиксированно:<br><code>/dev/shm/nginx/cdn-xhttp.sock</code></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="check">
+      <div class="num">04</div>
+      <div class="card">
+        <h2>Проверьте результат</h2>
+        <div class="codebox">
+          <div class="codehead"><span>Проверка</span><button class="copy" data-copy="verify">Копировать</button></div>
+          <pre id="verify">curl -sS https://127.0.0.1/health
+curl -f http://127.0.0.1:9000/health
+ls -l /dev/shm/nginx/cdn-xhttp.sock
+ss -lntp | grep -E ':443|:9000'
+docker logs --tail 100 nginx-cdn</pre>
+        </div>
+        <div class="success">
+          <div>✓</div>
+          <div><b>Сервер готов.</b><br>В NGENIX укажите публичный IP origin и HTTPS-порт 443. Образ: <code>ghcr.io/raaad1on/nginx-gag:cdn-latest</code>.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    NGENIX → HTTPS :443 → Nginx (cdn) → unix:/dev/shm/nginx/cdn-xhttp.sock → Xray xHTTP
+  </footer>
+</div>
+<script>
+document.querySelectorAll('.copy').forEach(button => {
+  button.addEventListener('click', async () => {
+    const target = document.getElementById(button.dataset.copy);
+    const text = target.innerText;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (e) {
+      const area = document.createElement('textarea');
+      area.value = text;
+      area.style.position = 'fixed';
+      area.style.opacity = '0';
+      document.body.appendChild(area);
+      area.select();
+      document.execCommand('copy');
+      area.remove();
+    }
+    const old = button.textContent;
+    button.textContent = 'Скопировано';
+    button.classList.add('done');
+    setTimeout(() => {
+      button.textContent = old;
+      button.classList.remove('done');
+    }, 1600);
+  });
+});
+</script>
+</body>
+</html>

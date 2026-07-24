@@ -1,15 +1,16 @@
 services:
-  security-gateway:
-    image: ghcr.io/raaad1on/nginx-gag:pqc-latest
-    container_name: nginx-gag
+  nginx-cdn:
+    image: ghcr.io/raaad1on/nginx-gag:cdn-latest
+    container_name: nginx-cdn
+    network_mode: host
     environment:
       - DOMAIN=example.com
+      - XHTTP_PATH=/api/v1/hs/edge/sigments.ts
     volumes:
+      # Real TLS certs (same layout as nginx-gag)
       - /etc/nginx/ssl:/etc/nginx/ssl:ro
+      # Shared with Xray: expect /dev/shm/nginx/cdn-xhttp.sock
       - /dev/shm/nginx:/dev/shm/nginx
-    ports:
-      - "127.0.0.1:444:444"
-      - "127.0.0.1:9000:9000"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
@@ -17,9 +18,3 @@ services:
       timeout: 10s
       retries: 3
       start_period: 5s
-    networks:
-      - nginx-gag-network
-
-networks:
-  nginx-gag-network:
-    driver: bridge

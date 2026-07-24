@@ -2,6 +2,16 @@
 set -euo pipefail
 
 DOMAIN="${DOMAIN:-example.com}"
+XHTTP_PATH="${XHTTP_PATH:-/api/v1/hs/edge/sigments.ts}"
+
+# Normalize path: leading slash, no trailing slash (except root)
+case "$XHTTP_PATH" in
+    /*) ;;
+    *) XHTTP_PATH="/$XHTTP_PATH" ;;
+esac
+while [ "$XHTTP_PATH" != "/" ] && [ "${XHTTP_PATH%/}" != "$XHTTP_PATH" ]; do
+    XHTTP_PATH="${XHTTP_PATH%/}"
+done
 
 mkdir -p /dev/shm/nginx
 chmod 755 /dev/shm/nginx
@@ -32,7 +42,9 @@ events {
 http {
     limit_req_zone $binary_remote_addr zone=speedtest:1m rate=10r/m;
 NGINX_CONF
-    sed "s/{{DOMAIN}}/${DOMAIN}/g" /etc/nginx/nginx.conf.template >> /opt/nginx/conf/nginx.conf
+    sed -e "s|{{DOMAIN}}|${DOMAIN}|g" \
+        -e "s|{{XHTTP_PATH}}|${XHTTP_PATH}|g" \
+        /etc/nginx/nginx.conf.template >> /opt/nginx/conf/nginx.conf
     echo "}" >> /opt/nginx/conf/nginx.conf
 fi
 
