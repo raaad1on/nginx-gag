@@ -25,8 +25,13 @@ chmod 644 /var/www/speedtest-10mb.bin
 
 if [ -f /etc/nginx/nginx.conf.template ]; then
     cat > /opt/nginx/conf/nginx.conf <<'NGINX_CONF'
+worker_processes auto;
+worker_rlimit_nofile 65535;
+
 events {
-    worker_connections 1024;
+    worker_connections 16384;
+    use epoll;
+    multi_accept on;
 }
 
 http {
