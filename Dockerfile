@@ -1,5 +1,8 @@
 FROM nginx:alpine
 
+# Copy main nginx config with optimized worker settings
+COPY main-nginx.conf /etc/nginx/nginx.conf
+
 # Copy nginx configuration template
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
