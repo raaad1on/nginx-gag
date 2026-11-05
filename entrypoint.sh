@@ -3,8 +3,9 @@ set -euo pipefail
 
 DOMAIN="${DOMAIN:-example.com}"
 
-mkdir -p /dev/shm/nginx
+mkdir -p /dev/shm/nginx /var/www
 chmod 755 /dev/shm/nginx
+rm -f /dev/shm/nginx/nginx.sock
 
 LABEL="${DOMAIN%%.*}"
 LABEL_UPPER="$(echo "$LABEL" | tr '[:lower:]' '[:upper:]')"
@@ -24,9 +25,10 @@ dd if=/dev/urandom of=/var/www/speedtest-10mb.bin bs=1M count=10 status=none
 chmod 644 /var/www/speedtest-10mb.bin
 
 if [ -f /etc/nginx/nginx.conf.template ]; then
-    cat > /opt/nginx/conf/nginx.conf <<'NGINX_CONF'
+    cat > /etc/nginx/nginx.conf <<'NGINX_CONF'
 worker_processes auto;
 worker_rlimit_nofile 65535;
+pid /var/run/nginx.pid;
 
 events {
     worker_connections 16384;
@@ -37,8 +39,8 @@ events {
 http {
     limit_req_zone $binary_remote_addr zone=speedtest:1m rate=10r/m;
 NGINX_CONF
-    sed "s/{{DOMAIN}}/${DOMAIN}/g" /etc/nginx/nginx.conf.template >> /opt/nginx/conf/nginx.conf
-    echo "}" >> /opt/nginx/conf/nginx.conf
+    sed "s/{{DOMAIN}}/${DOMAIN}/g" /etc/nginx/nginx.conf.template >> /etc/nginx/nginx.conf
+    echo "}" >> /etc/nginx/nginx.conf
 fi
 
 exec "$@"

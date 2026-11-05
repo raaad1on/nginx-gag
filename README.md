@@ -1,10 +1,10 @@
 # nginx-gag
 
-Post-quantum secure authentication gateway built with nginx and Open Quantum Safe. Presents a fake authentication interface while logging all access attempts.
+Authentication gateway on stock nginx 1.30 with OpenSSL 3.5. Presents a fake authentication interface while logging all access attempts.
 
 ## Features
 
-- **Post-Quantum TLS**: ML-KEM (X25519MLKEM768) hybrid key exchange via OpenSSL 3 + OQS
+- **Post-Quantum TLS**: ML-KEM (X25519MLKEM768) hybrid key exchange via OpenSSL 3.5
 - **Security Headers**: HSTS, CSP, X-Frame-Options, and more
 - **Fake Authentication**: Always fails authentication for security through obscurity
 - **Dynamic Node ID**: Badge like `DE2-NODE-387` from the third-level DOMAIN label + random digits
