@@ -1,4 +1,4 @@
-FROM nginx:1.30.6-trixie
+FROM nginx:1.30.7-trixie
 
 USER root
 RUN apt-get update \
